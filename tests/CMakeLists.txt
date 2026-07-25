@@ -78,7 +78,7 @@ set(tests
   test_mock_pub_sub)
 
 if(NOT WIN32)
-  list(APPEND tests test_security_gssapi test_socks test_connect_null_fuzzer test_bind_null_fuzzer test_connect_fuzzer test_bind_fuzzer)
+  list(APPEND tests test_security_gssapi test_socks test_connect_null_fuzzer test_bind_null_fuzzer test_connect_fuzzer test_bind_fuzzer test_connect_stream_fuzzer test_bind_stream_fuzzer test_socket_options_fuzzer)
 endif()
 
 if(ZMQ_HAVE_CURVE)
@@ -171,6 +171,7 @@ if(ENABLE_DRAFTS)
     test_router_notify
     test_xpub_manual_last_value
     test_peer
+    test_peer_disconnect
     test_msg_init
     test_channel
     test_hello_msg
@@ -192,6 +193,10 @@ endif()
 
 if(ZMQ_HAVE_WS)
   list(APPEND tests test_ws_transport)
+
+  if(NOT WIN32)
+    list(APPEND tests test_connect_ws_fuzzer test_bind_ws_fuzzer)
+  endif()
 
   if(ZMQ_HAVE_WSS)
     list(APPEND tests test_wss_transport)

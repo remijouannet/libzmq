@@ -383,13 +383,14 @@ if(WIN32)
       "${ZMQ_WIN32_WINNT_DEFAULT}"
       CACHE STRING "Value to set _WIN32_WINNT to for building [default=autodetect from build environment]")
 
-  # On Windows Vista or greater, with MSVC 2013 or greater, default to epoll (which is required on Win 10 for ipc
-  # support)
+  # On Windows Vista or greater, default to epoll for MSVC 2013+ and MinGW
+  # to avoid falling back to select, which is incompatible with IPC transport.
   if(ZMQ_WIN32_WINNT GREATER "0x05FF"
-     AND MSVC_VERSION GREATER 1799
      AND POLLER STREQUAL ""
      AND NOT ZMQ_HAVE_WINDOWS_UWP)
-    set(POLLER "epoll")
+    if(MSVC_VERSION GREATER 1799 OR MINGW)
+      set(POLLER "epoll")
+    endif()
   endif()
 
   add_definitions(-D_WIN32_WINNT=${ZMQ_WIN32_WINNT})
@@ -491,9 +492,9 @@ execute_process(
   OUTPUT_VARIABLE CACHELINE_SIZE
   ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CACHELINE_SIZE STREQUAL ""
+   OR CACHELINE_SIZE STREQUAL "undefined"
    OR CACHELINE_SIZE EQUAL 0
-   OR CACHELINE_SIZE EQUAL -1
-   OR CACHELINE_SIZE STREQUAL "undefined")
+   OR CACHELINE_SIZE EQUAL -1)
   set(ZMQ_CACHELINE_SIZE 64)
 else()
   set(ZMQ_CACHELINE_SIZE ${CACHELINE_SIZE})
